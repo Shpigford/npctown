@@ -25,7 +25,7 @@ jobs:
           version: latest # Or pin to a specific version like '1.100.0'
 
       - name: Link Supabase project (Production)
-        run: supabase link --project-ref $PRODUCTION_PROJECT_REF
+        run: supabase link --project-ref ${{ secrets.PRODUCTION_PROJECT_REF }}
         # The CLI should pick up SUPABASE_DB_PASSWORD from env for non-interactive use
 
       - name: Apply database migrations (Production)
