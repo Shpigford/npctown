@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from 'react'
 
-const TICK_INTERVAL = 30000 // 30 seconds = 1 hour in game time
+const TICK_INTERVAL = 10000 // 10 seconds = 1 hour in game time
 
 export function useWorldClock() {
   const intervalRef = useRef<NodeJS.Timeout>()

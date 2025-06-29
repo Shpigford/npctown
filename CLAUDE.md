@@ -36,7 +36,7 @@ npx supabase db pull    # Pull remote schema changes
    - UI automatically updates when database changes
 
 3. **World Clock** (`lib/hooks/useWorldClock.ts`, `app/api/world-tick/route.ts`)
-   - 30-second intervals = 1 game hour
+   - 10-second intervals = 1 game hour
    - World tick updates time, weather, and triggers all NPC actions
    - Weather changes with 30% probability per tick
 
@@ -100,7 +100,7 @@ NPCs can be added via the UI spawner or by inserting into the database with pers
 Edit the prompt in `app/api/npc-actions/route.ts` - the AI considers personality, stats, surroundings, and memories when making decisions. Responses must be valid JSON with action, target, description, dialogue, and thought fields.
 
 ### Adjusting Game Speed
-Change `TICK_INTERVAL` in `lib/hooks/useWorldClock.ts` (default: 30000ms = 30 seconds per game hour)
+Change `TICK_INTERVAL` in `lib/hooks/useWorldClock.ts` (default: 10000ms = 10 seconds per game hour)
 
 ### Testing Locally
 Use the "TRIGGER WORLD TICK" button in debug controls to manually advance time and trigger NPC actions without waiting for the timer.
