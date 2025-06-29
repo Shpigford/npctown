@@ -1,0 +1,29 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    @apply bg-black text-green-400;
+  }
+  
+  body {
+    @apply font-mono;
+  }
+  
+  * {
+    @apply selection:bg-green-400 selection:text-black;
+  }
+}
+
+@layer utilities {
+  .terminal-glow {
+    text-shadow: 0 0 10px rgba(74, 222, 128, 0.5);
+  }
+  
+  .terminal-border {
+    box-shadow: 
+      0 0 20px rgba(74, 222, 128, 0.3),
+      inset 0 0 20px rgba(74, 222, 128, 0.1);
+  }
+}
