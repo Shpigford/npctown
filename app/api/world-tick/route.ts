@@ -264,16 +264,26 @@ async function resetGame(supabase: any) {
   
   // 3. Clear all events
   console.log('[resetGame] Clearing events...')
-  // Delete all events - using a condition that matches all rows
-  const { error: deleteError, count } = await supabase
-    .from('events')
-    .delete()
-    .gte('created_at', '1900-01-01') // This will match all events
+  
+  // Use the database function that bypasses RLS
+  const { error: deleteError } = await supabase.rpc('delete_all_events')
   
   if (deleteError) {
-    console.error('[resetGame] Error deleting events:', deleteError)
+    console.error('[resetGame] Error calling delete_all_events:', deleteError)
+    
+    // Fallback: try direct delete (will only work if RLS policy is added)
+    const { error: fallbackError } = await supabase
+      .from('events')
+      .delete()
+      .neq('id', '00000000-0000-0000-0000-000000000000') // Matches all real IDs
+    
+    if (fallbackError) {
+      console.error('[resetGame] Fallback delete also failed:', fallbackError)
+    } else {
+      console.log('[resetGame] Events deleted using fallback method')
+    }
   } else {
-    console.log(`[resetGame] Deleted ${count} events`)
+    console.log('[resetGame] Successfully deleted all events using RPC')
   }
   
   // 4. Reset world state to day 1, 8 AM, clear weather
