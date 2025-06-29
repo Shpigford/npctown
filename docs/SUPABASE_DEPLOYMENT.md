@@ -4,12 +4,12 @@
 
 Add these secrets to your GitHub repository (Settings → Secrets and variables → Actions):
 
-1. **SUPABASE_PROJECT_REF**
+1. **PRODUCTION_PROJECT_REF**
    - Your Supabase project reference ID
    - Find it in: Supabase Dashboard → Settings → General → Reference ID
    - Example: `abcdefghijklmnop`
 
-2. **SUPABASE_DB_PASSWORD**
+2. **PRODUCTION_DB_PASSWORD**
    - Your database password
    - Find it in: Supabase Dashboard → Settings → Database → Connection string
    - This is the password you set when creating the project

@@ -12,8 +12,8 @@ jobs:
     # environment: production
     env:
       SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
-      SUPABASE_DB_PASSWORD: ${{ secrets.PRODUCTION_DB_PASSWORD }}
-      PRODUCTION_PROJECT_REF: ${{ secrets.PRODUCTION_PROJECT_REF }}
+      SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+      SUPABASE_PROJECT_REF: ${{ secrets.SUPABASE_PROJECT_REF }}
 
     steps:
       - name: Checkout repository
@@ -24,10 +24,18 @@ jobs:
         with:
           version: latest # Or pin to a specific version like '1.100.0'
 
+      - name: Verify secrets are set
+        run: |
+          if [ -z "${{ secrets.SUPABASE_PROJECT_REF }}" ]; then
+            echo "Error: SUPABASE_PROJECT_REF secret is not set"
+            echo "Please add it in GitHub repository settings > Secrets and variables > Actions"
+            exit 1
+          fi
+          echo "Project ref is configured"
+
       - name: Link Supabase project (Production)
-        run: supabase link --project-ref ${{ secrets.PRODUCTION_PROJECT_REF }}
-        # The CLI should pick up SUPABASE_DB_PASSWORD from env for non-interactive use
+        run: supabase link --project-ref ${{ secrets.SUPABASE_PROJECT_REF }} --password ${{ secrets.SUPABASE_DB_PASSWORD }}
 
       - name: Apply database migrations (Production)
-        run: supabase db push --include-all
+        run: supabase db push
         # Using db push as it's often more reliable for remote deployments in CI
