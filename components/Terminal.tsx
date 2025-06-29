@@ -103,6 +103,15 @@ export default function Terminal() {
               <span className="text-white/70">[H] HELP</span>
               <span className="mx-3 text-white/30">|</span>
               <span className="text-green">SIMULATION RUNNING...</span>
+              <span className="mx-3 text-white/30">|</span>
+              <a 
+                href="https://github.com/Shpigford/npctown" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="text-white/70 hover:text-white transition-colors"
+              >
+                GITHUB
+              </a>
             </div>
           </div>
         </footer>
