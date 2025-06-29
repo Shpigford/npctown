@@ -81,17 +81,17 @@ IMPORTANT NEEDS TO CONSIDER:
 - If social < 20: You're feeling very lonely, seek companionship${totalCitizens === 1 ? ' (though you are alone)' : ''}
 
 Actions you can take:
-1. Move (specify direction or destination)
-2. Interact with another NPC
-3. Enter/use a building
+1. Move (specify direction: north, south, east, west, northeast, northwest, southeast, southwest)
+2. Interact with another NPC (use their exact name)
+3. Enter/use a building (use the building's exact name)
 4. Rest or reflect (RESTORES ENERGY - do this when tired!)
 5. Speak (express thoughts aloud)
 6. Observe your surroundings
 
-Respond with a JSON object:
+Respond with a valid JSON object (do not include any markdown formatting or code blocks):
 {
   "action": "move|interact|enter|rest|speak|observe",
-  "target": "direction, person name, or building name",
+  "target": "For move: use exact direction (north/south/east/west/northeast/northwest/southeast/southwest). For interact: NPC name. For enter: building name",
   "description": "A rich, personality-driven description of what you're doing, thinking, and feeling. Include sensory details, emotions, and internal monologue. Be specific and creative! (2-3 sentences)",
   "dialogue": "What you say out loud (if speaking)",
   "thought": "Your internal thoughts/feelings that others can't hear"
@@ -118,6 +118,11 @@ Respond with a JSON object:
       model: openai('gpt-4o-mini'),
       prompt,
       temperature: 0.8,
+      experimental_providerMetadata: {
+        openai: {
+          response_format: { type: 'json_object' }
+        }
+      }
     })
     
     console.log('[NPC AI] Generated response:', text)
@@ -175,6 +180,7 @@ export async function applyDecision(npc: any, decision: any, supabase: any) {
 
   // Handle movement
   if (decision.action === 'move') {
+    console.log('[NPC Movement] Processing move action for', npc.name, 'with target:', decision.target)
     const movements: Record<string, [number, number]> = {
       north: [0, -1],
       south: [0, 1],
@@ -186,9 +192,20 @@ export async function applyDecision(npc: any, decision: any, supabase: any) {
       southwest: [-1, 1]
     }
     
-    const [dx, dy] = movements[decision.target] || [0, 0]
+    // Normalize the target to lowercase and handle various formats
+    const normalizedTarget = decision.target?.toLowerCase()?.trim() || ''
+    const [dx, dy] = movements[normalizedTarget] || [0, 0]
+    
+    if (dx === 0 && dy === 0) {
+      console.log('[NPC Movement] Invalid movement direction:', decision.target, 'normalized to:', normalizedTarget)
+    }
+    
+    const oldX = npc.x
+    const oldY = npc.y
     newX = Math.max(0, Math.min(WORLD_SIZE - 1, npc.x + dx))
     newY = Math.max(0, Math.min(WORLD_SIZE - 1, npc.y + dy))
+    
+    console.log(`[NPC Movement] ${npc.name} moving from (${oldX},${oldY}) to (${newX},${newY})`)
     eventType = 'movement'
   }
 
@@ -264,6 +281,7 @@ export async function applyDecision(npc: any, decision: any, supabase: any) {
   const updatedMemory = [...currentMemory.slice(-9), newMemory] // Keep last 10 memories
 
   // Update NPC position and state
+  console.log(`[NPC Update] Updating ${npc.name} position to (${newX},${newY}) with action: ${decision.action}`)
   const { error: updateError } = await supabase
     .from('npcs')
     .update({
