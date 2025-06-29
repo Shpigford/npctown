@@ -6,6 +6,47 @@ export async function POST() {
   try {
     const supabase = await createClient()
 
+    // Check for reset flag - simple boolean check
+    const { data: resetControl } = await supabase
+      .from('admin_controls')
+      .select('*')
+      .eq('setting_name', 'reset_game')
+      .single()
+
+    // Simple check - if setting_value is true (as a boolean), reset the game
+    if (resetControl?.setting_value === true) {
+      console.log('[world-tick API] Reset flag detected! Initiating game reset...')
+      
+      // Perform reset operations
+      await resetGame(supabase)
+      
+      // Set the flag back to false
+      await supabase
+        .from('admin_controls')
+        .update({
+          setting_value: false
+        })
+        .eq('setting_name', 'reset_game')
+      
+      // Log reset event
+      await supabase
+        .from('events')
+        .insert({
+          type: 'system',
+          description: 'Game world has been reset',
+          metadata: { 
+            reset_at: new Date().toISOString()
+          }
+        })
+      
+      console.log('[world-tick API] Game reset completed')
+      return NextResponse.json({ 
+        success: true, 
+        message: 'Game reset completed',
+        reset: true 
+      })
+    }
+
     // Get current world state
     console.log('[world-tick API] Fetching current world state...')
     const { data: worldState, error: worldStateError } = await supabase
@@ -164,4 +205,88 @@ export async function POST() {
     console.error('[world-tick API] Unexpected error in world tick:', error)
     return NextResponse.json({ error: 'Failed to update world', details: error.message }, { status: 500 })
   }
+}
+
+async function resetGame(supabase: any) {
+  console.log('[resetGame] Starting game reset...')
+  
+  // 1. Delete all NPCs except the initial 3
+  console.log('[resetGame] Clearing NPCs...')
+  await supabase
+    .from('npcs')
+    .delete()
+    .not('name', 'in', '("Alice","Bob","Carol")')
+  
+  // 2. Reset the initial NPCs to their starting positions and stats
+  const initialNpcs = [
+    {
+      name: 'Alice',
+      x: 5,
+      y: 5,
+      stats: { health: 100, energy: 100, hunger: 0, social: 50 },
+      memory: [],
+      relationships: [],
+      current_action: null
+    },
+    {
+      name: 'Bob',
+      x: 10,
+      y: 10,
+      stats: { health: 100, energy: 100, hunger: 0, social: 50 },
+      memory: [],
+      relationships: [],
+      current_action: null
+    },
+    {
+      name: 'Carol',
+      x: 15,
+      y: 15,
+      stats: { health: 100, energy: 100, hunger: 0, social: 50 },
+      memory: [],
+      relationships: [],
+      current_action: null
+    }
+  ]
+  
+  for (const npc of initialNpcs) {
+    await supabase
+      .from('npcs')
+      .update({
+        x: npc.x,
+        y: npc.y,
+        stats: npc.stats,
+        memory: npc.memory,
+        relationships: npc.relationships,
+        current_action: npc.current_action
+      })
+      .eq('name', npc.name)
+  }
+  
+  // 3. Clear all events
+  console.log('[resetGame] Clearing events...')
+  // Delete all events - using a condition that matches all rows
+  const { error: deleteError, count } = await supabase
+    .from('events')
+    .delete()
+    .gte('created_at', '1900-01-01') // This will match all events
+  
+  if (deleteError) {
+    console.error('[resetGame] Error deleting events:', deleteError)
+  } else {
+    console.log(`[resetGame] Deleted ${count} events`)
+  }
+  
+  // 4. Reset world state to day 1, 8 AM, clear weather
+  console.log('[resetGame] Resetting world state...')
+  await supabase
+    .from('world_state')
+    .update({
+      time_of_day: 8,
+      day_count: 1,
+      weather: 'clear',
+      global_events: []
+    })
+    .eq('id', (await supabase.from('world_state').select('id').single()).data.id)
+  
+  console.log('[resetGame] Game reset complete!')
 }
