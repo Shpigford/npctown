@@ -96,32 +96,59 @@ export async function POST() {
     // Trigger NPC actions
     if (npcs && npcs.length > 0) {
       console.log('[world-tick API] Triggering actions for', npcs.length, 'NPCs')
+      
+      // Instead of making HTTP calls, directly call the NPC decision logic
+      // This avoids Vercel authentication issues for internal API calls
+      const { makeNPCDecision, applyDecision } = await import('./npc-actions-logic')
+      
       for (const npc of npcs) {
         try {
-          // Call NPC action endpoint
-          const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000'
-          const npcActionUrl = `${baseUrl}/api/npc-actions`
-          console.log('[world-tick API] Calling NPC action for NPC', npc.id, 'at:', npcActionUrl)
-          const response = await fetch(npcActionUrl, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ npcId: npc.id })
-          })
-          if (!response.ok) {
-            const responseText = await response.text()
-            console.error('[world-tick API] NPC action failed for NPC', npc.id, 'with status:', response.status)
-            console.error('[world-tick API] Response body:', responseText)
-            try {
-              const errorJson = JSON.parse(responseText)
-              console.error('[world-tick API] Error details:', errorJson)
-            } catch (e) {
-              // Not JSON, already logged as text
-            }
-          } else {
-            console.log('[world-tick API] NPC action succeeded for NPC', npc.id)
+          console.log('[world-tick API] Processing NPC action for:', npc.id)
+          
+          // Get NPC data
+          const { data: npcData } = await supabase
+            .from('npcs')
+            .select('*')
+            .eq('id', npc.id)
+            .single()
+          
+          if (!npcData) {
+            console.error('[world-tick API] NPC not found:', npc.id)
+            continue
           }
+          
+          // Get world context for this NPC
+          const { data: otherNpcs } = await supabase
+            .from('npcs')
+            .select('*')
+            .neq('id', npc.id)
+
+          const { data: buildings } = await supabase
+            .from('buildings')
+            .select('*')
+
+          const { data: recentEvents } = await supabase
+            .from('events')
+            .select('*')
+            .eq('npc_id', npc.id)
+            .order('created_at', { ascending: false })
+            .limit(10)
+          
+          // Generate AI decision
+          const decision = await makeNPCDecision(
+            npcData,
+            otherNpcs || [],
+            buildings || [],
+            worldState,
+            recentEvents || []
+          )
+          
+          // Apply decision
+          await applyDecision(npcData, decision, supabase)
+          
+          console.log('[world-tick API] NPC action succeeded for NPC', npc.id)
         } catch (npcError) {
-          console.error('[world-tick API] Error triggering NPC action for NPC', npc.id, ':', npcError)
+          console.error('[world-tick API] Error processing NPC action for NPC', npc.id, ':', npcError)
         }
       }
     } else {
