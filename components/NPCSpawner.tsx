@@ -63,7 +63,8 @@ export default function NPCSpawner() {
           energy: 100,
           hunger: 0,
           social: 50
-        }
+        },
+        relationships: []
       })
 
       if (error) {
@@ -86,16 +87,16 @@ export default function NPCSpawner() {
   }
 
   return (
-    <div className="border border-green-400/30 p-4 space-y-2">
-      <h3 className="text-sm font-bold opacity-80">SPAWN NPC</h3>
+    <div className="sf-panel">
+      <h3 className="text-sm font-bold mb-3 pb-2 border-b border-white/50">SPAWN CITIZEN</h3>
       
       {!showForm ? (
         <button
           onClick={() => setShowForm(true)}
           disabled={isSpawning}
-          className="w-full px-4 py-2 border border-green-400 hover:bg-green-400 hover:text-black transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+          className="w-full sf-button py-2 disabled:opacity-50 flex items-center justify-center gap-2"
         >
-          <UserPlus size={14} />
+          <span className="mr-2">+</span>
           <span>ADD NEW CITIZEN</span>
         </button>
       ) : (
@@ -105,13 +106,13 @@ export default function NPCSpawner() {
             placeholder="Name (optional, random if empty)"
             value={npcName}
             onChange={(e) => setNpcName(e.target.value)}
-            className="w-full px-2 py-1 bg-black border border-green-400/30 text-green-400 text-xs focus:outline-none focus:border-green-400"
+            className="w-full px-2 py-1 bg-black border-2 border-white text-amber-600 text-sm focus:outline-none focus:border-white"
           />
           <div className="flex gap-2">
             <button
               onClick={spawnRandomNPC}
               disabled={isSpawning}
-              className="flex-1 px-2 py-1 border border-green-400 hover:bg-green-400 hover:text-black transition-colors disabled:opacity-50 text-xs flex items-center justify-center gap-1"
+              className="flex-1 sf-button py-1 disabled:opacity-50 text-sm flex items-center justify-center gap-1"
             >
               {isSpawning ? (
                 <>
@@ -130,7 +131,7 @@ export default function NPCSpawner() {
                 setShowForm(false)
                 setNpcName('')
               }}
-              className="px-2 py-1 border border-green-400/30 hover:border-green-400 transition-colors text-xs"
+              className="sf-button py-1 opacity-70 hover:opacity-100 transition-opacity text-sm"
             >
               CANCEL
             </button>
@@ -138,8 +139,8 @@ export default function NPCSpawner() {
         </div>
       )}
       
-      <div className="text-xs opacity-50">
-        Random personality & location
+      <div className="text-sm opacity-50 mt-2">
+        RANDOM PERSONALITY & LOCATION
       </div>
     </div>
   )

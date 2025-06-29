@@ -34,14 +34,14 @@ export default function PeopleDirectory({ npcs }: PeopleDirectoryProps) {
   const getStatColor = (value: number, stat: string) => {
     if (stat === 'hunger') {
       // For hunger, high is bad
-      if (value > 70) return 'text-red-400'
-      if (value > 40) return 'text-yellow-400'
-      return 'text-green-400'
+      if (value > 70) return 'text-light-red'
+      if (value > 40) return 'text-light-yellow'
+      return 'text-green'
     } else {
       // For other stats, low is bad
-      if (value < 30) return 'text-red-400'
-      if (value < 60) return 'text-yellow-400'
-      return 'text-green-400'
+      if (value < 30) return 'text-light-red'
+      if (value < 60) return 'text-light-yellow'
+      return 'text-green'
     }
   }
 
@@ -56,24 +56,23 @@ export default function PeopleDirectory({ npcs }: PeopleDirectoryProps) {
 
   return (
     <div className="space-y-4">
-      {/* Header with sorting */}
-      <div className="flex items-center justify-between mb-2">
-        <h3 className="text-sm font-bold opacity-80">CITIZENS ({npcs.length})</h3>
+      {/* Header with sorting - removed since it's now in Terminal */}
+      <div className="flex items-center justify-between mb-3">
         <select
           value={sortBy}
           onChange={(e) => setSortBy(e.target.value as any)}
-          className="bg-black border border-green-400/30 text-green-400 text-xs px-2 py-1 rounded focus:outline-none focus:border-green-400"
+          className="sf-button text-xs px-2 py-1"
         >
-          <option value="name">Sort by Name</option>
-          <option value="health">Sort by Health</option>
-          <option value="energy">Sort by Energy</option>
-          <option value="hunger">Sort by Hunger</option>
-          <option value="social">Sort by Social</option>
+          <option value="name">SORT: NAME</option>
+          <option value="health">SORT: HEALTH</option>
+          <option value="energy">SORT: ENERGY</option>
+          <option value="hunger">SORT: HUNGER</option>
+          <option value="social">SORT: SOCIAL</option>
         </select>
       </div>
 
       {/* NPC List */}
-      <div className="space-y-2 max-h-96 overflow-y-auto scrollbar-thin scrollbar-thumb-green-400/20">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 max-h-[600px] overflow-y-auto">
         {sortedNpcs.map(npc => {
           const stats = typeof npc.stats === 'string' ? JSON.parse(npc.stats) : npc.stats
           const personality = typeof npc.personality === 'string' ? JSON.parse(npc.personality) : npc.personality
@@ -82,7 +81,7 @@ export default function PeopleDirectory({ npcs }: PeopleDirectoryProps) {
           return (
             <div
               key={npc.id}
-              className="border border-green-400/20 rounded p-2 hover:border-green-400/40 transition-colors"
+              className="border-[2px] border-white p-3 hover:border-light-yellow transition-colors"
             >
               {/* Main Info */}
               <div
@@ -90,8 +89,7 @@ export default function PeopleDirectory({ npcs }: PeopleDirectoryProps) {
                 onClick={() => setExpandedNpc(isExpanded ? null : npc.id)}
               >
                 <div className="flex items-center gap-2">
-                  <User size={14} className="text-yellow-400" />
-                  <span className="font-semibold">{npc.name}</span>
+                  <span className="font-bold">{npc.name.toUpperCase()}</span>
                   <span className="text-xs opacity-50">
                     {getPersonalityIcon(personality.traits || [])}
                   </span>
@@ -106,28 +104,40 @@ export default function PeopleDirectory({ npcs }: PeopleDirectoryProps) {
               </div>
 
               {/* Stats Bar */}
-              <div className="mt-2 grid grid-cols-4 gap-2 text-xs">
-                <div className="flex items-center gap-1">
-                  <Heart size={10} className={getStatColor(stats.health, 'health')} />
-                  <span className={getStatColor(stats.health, 'health')}>
+              <div className="mt-3 space-y-1">
+                <div className="flex items-center gap-2">
+                  <span className="text-xs w-14 text-white/70">HEALTH</span>
+                  <div className="flex-1 sf-stat-bar">
+                    <div className={`sf-stat-fill ${stats.health > 70 ? 'stat-high' : stats.health > 30 ? 'stat-med' : 'stat-low'}`} style={{width: `${stats.health}%`}} />
+                  </div>
+                  <span className={`text-xs w-12 text-right ${getStatColor(stats.health, 'health')}`}>
                     {stats.health}%
                   </span>
                 </div>
-                <div className="flex items-center gap-1">
-                  <Zap size={10} className={getStatColor(stats.energy, 'energy')} />
-                  <span className={getStatColor(stats.energy, 'energy')}>
-                    {stats.energy}%
-                  </span>
-                </div>
-                <div className="flex items-center gap-1">
-                  <Utensils size={10} className={getStatColor(stats.hunger, 'hunger')} />
-                  <span className={getStatColor(stats.hunger, 'hunger')}>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs w-14 text-white/70">HUNGER</span>
+                  <div className="flex-1 sf-stat-bar">
+                    <div className={`sf-stat-fill ${stats.hunger < 30 ? 'stat-high' : stats.hunger < 70 ? 'stat-med' : 'stat-low'}`} style={{width: `${stats.hunger}%`}} />
+                  </div>
+                  <span className={`text-xs w-12 text-right ${getStatColor(stats.hunger, 'hunger')}`}>
                     {stats.hunger}%
                   </span>
                 </div>
-                <div className="flex items-center gap-1">
-                  <Users size={10} className={getStatColor(stats.social, 'social')} />
-                  <span className={getStatColor(stats.social, 'social')}>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs w-14 text-white/70">ENERGY</span>
+                  <div className="flex-1 sf-stat-bar">
+                    <div className={`sf-stat-fill ${stats.energy > 70 ? 'stat-high' : stats.energy > 30 ? 'stat-med' : 'stat-low'}`} style={{width: `${stats.energy}%`}} />
+                  </div>
+                  <span className={`text-xs w-12 text-right ${getStatColor(stats.energy, 'energy')}`}>
+                    {stats.energy}%
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs w-14 text-white/70">SOCIAL</span>
+                  <div className="flex-1 sf-stat-bar">
+                    <div className={`sf-stat-fill ${stats.social > 70 ? 'stat-high' : stats.social > 30 ? 'stat-med' : 'stat-low'}`} style={{width: `${stats.social}%`}} />
+                  </div>
+                  <span className={`text-xs w-12 text-right ${getStatColor(stats.social, 'social')}`}>
                     {stats.social}%
                   </span>
                 </div>
@@ -135,7 +145,7 @@ export default function PeopleDirectory({ npcs }: PeopleDirectoryProps) {
 
               {/* Expanded Details */}
               {isExpanded && (
-                <div className="mt-3 pt-3 border-t border-green-400/10 space-y-2 text-xs">
+                <div className="mt-3 pt-3 border-t border-white/10 space-y-2 text-xs">
                   {/* Current Action */}
                   {npc.current_action && (
                     <div className="flex items-start gap-2">
@@ -157,22 +167,45 @@ export default function PeopleDirectory({ npcs }: PeopleDirectoryProps) {
                     </div>
                   </div>
 
+                  {/* Relationships */}
+                  {npc.relationships && npc.relationships.length > 0 && (
+                    <div className="space-y-1">
+                      <div className="opacity-50">Relationships:</div>
+                      <div className="ml-2 space-y-1">
+                        {npc.relationships.slice(0, 3).map((rel: any) => (
+                          <div key={rel.npc_id} className="flex items-center gap-2">
+                            <span>{rel.npc_name}:</span>
+                            <span className={rel.affinity > 0 ? 'text-green-400' : 'text-red-400'}>
+                              {rel.affinity > 0 ? '+' : ''}{rel.affinity}
+                            </span>
+                            <span className="opacity-50 text-xs">
+                              ({rel.familiarity}% familiar)
+                            </span>
+                          </div>
+                        ))}
+                        {npc.relationships.length > 3 && (
+                          <div className="opacity-50">...and {npc.relationships.length - 3} more</div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
                   {/* Status Summary */}
-                  <div className="mt-2 p-2 bg-green-400/5 rounded">
+                  <div className="mt-2 p-2 bg-white/5 border border-white/20">
                     {stats.energy < 30 && (
-                      <div className="text-yellow-400">⚠ Feeling tired</div>
+                      <div className="text-light-yellow uppercase">! FEELING TIRED</div>
                     )}
                     {stats.hunger > 70 && (
-                      <div className="text-red-400">⚠ Very hungry</div>
+                      <div className="text-light-red uppercase">! VERY HUNGRY</div>
                     )}
                     {stats.social < 30 && (
-                      <div className="text-yellow-400">⚠ Feeling lonely</div>
+                      <div className="text-light-yellow uppercase">! FEELING LONELY</div>
                     )}
                     {stats.health < 50 && (
-                      <div className="text-red-400">⚠ Health declining</div>
+                      <div className="text-light-red uppercase">! HEALTH DECLINING</div>
                     )}
                     {stats.energy >= 30 && stats.hunger <= 70 && stats.social >= 30 && stats.health >= 50 && (
-                      <div className="text-green-400">✓ Doing well</div>
+                      <div className="text-green uppercase">+ DOING WELL</div>
                     )}
                   </div>
                 </div>
@@ -182,15 +215,6 @@ export default function PeopleDirectory({ npcs }: PeopleDirectoryProps) {
         })}
       </div>
 
-      {/* Legend */}
-      <div className="text-xs opacity-50 space-y-1 pt-2 border-t border-green-400/20">
-        <div>Stats: Health • Energy • Hunger • Social</div>
-        <div className="flex gap-4">
-          <span className="text-green-400">Good</span>
-          <span className="text-yellow-400">Warning</span>
-          <span className="text-red-400">Critical</span>
-        </div>
-      </div>
     </div>
   )
 }

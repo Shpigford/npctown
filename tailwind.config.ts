@@ -8,8 +8,19 @@ export default {
   ],
   theme: {
     extend: {
+      colors: {
+        'light-red': '#e06c75',
+        'dark-red': '#be5046',
+        'green': '#98c379',
+        'light-green': '#b5e890',
+        'light-yellow': '#e5c07b',
+        'dark-yellow': '#d19a66',
+        'blue': '#61afef',
+        'magenta': '#c678dd',
+        'cyan': '#56b6c2',
+      },
       fontFamily: {
-        mono: ["Menlo", "Monaco", "Courier New", "monospace"],
+        mono: ["Geist Mono", "monospace"],
       },
       animation: {
         "text-glow": "text-glow 2s ease-in-out infinite alternate",

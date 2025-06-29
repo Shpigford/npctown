@@ -28,55 +28,48 @@ export default function EventLog({ events }: EventLogProps) {
   const getEventStyle = (type: GameEvent['type']) => {
     switch (type) {
       case 'movement': 
-        return { color: 'text-green-400', Icon: ArrowRight }
+        return { color: 'text-green', prefix: '>' }
       case 'interaction': 
-        return { color: 'text-yellow-400', Icon: Users }
+        return { color: 'text-light-yellow', prefix: '*' }
       case 'dialogue': 
-        return { color: 'text-blue-400', Icon: MessageSquare }
+        return { color: 'text-cyan', prefix: '"' }
       case 'action': 
-        return { color: 'text-purple-400', Icon: Activity }
+        return { color: 'text-light-yellow', prefix: '+' }
       case 'system': 
-        return { color: 'text-gray-400', Icon: Terminal }
+        return { color: 'text-white/50', prefix: '!' }
       default: 
-        return { color: 'text-green-400', Icon: Activity }
+        return { color: 'text-white', prefix: '-' }
     }
   }
 
   return (
     <div 
       ref={scrollRef}
-      className="h-[400px] overflow-y-auto space-y-1 text-xs font-mono scrollbar-thin scrollbar-thumb-green-400/20"
+      className="h-[480px] overflow-y-auto text-xs font-mono space-y-1"
     >
       {events.length === 0 ? (
-        <div className="opacity-50 flex items-center gap-2">
-          <Clock size={12} className="animate-pulse" />
-          Waiting for events...
+        <div className="text-white/50 uppercase">
+          <span className="animate-pulse">Waiting for events...</span>
         </div>
       ) : (
         events.map((event) => {
-          const { color, Icon } = getEventStyle(event.type)
+          const { color, prefix } = getEventStyle(event.type)
+          const timestamp = format(new Date(event.created_at), 'HH:mm')
           return (
-            <div 
-              key={event.id} 
-              className={`${color} animate-fade-in flex items-start gap-2`}
-            >
-              <Icon size={12} className="mt-0.5 flex-shrink-0" />
-              <div className="flex-1">
-                <span className="opacity-50 text-xs">
-                  [{format(new Date(event.created_at), 'HH:mm:ss')}]
-                </span>{' '}
-                <span className="font-semibold">{event.description}</span>
-                {event.metadata?.thought && (
-                  <div className="text-xs italic opacity-70 ml-4 mt-1">
-                    💭 {event.metadata.thought}
-                  </div>
-                )}
-              </div>
+            <div key={event.id} className="leading-relaxed">
+              <span className="text-white/30">[{timestamp}]</span>
+              <span className={`${color} ml-2`}>{prefix}</span>
+              <span className="text-white ml-1">{event.description}</span>
+              {event.metadata?.thought && (
+                <div className="text-white/50 italic ml-14 text-xs">
+                  ({event.metadata.thought})
+                </div>
+              )}
             </div>
           )
         })
       )}
-      <div className="animate-cursor-blink inline-block">_</div>
+      <div className="text-white animate-pulse mt-2">█</div>
     </div>
   )
 }

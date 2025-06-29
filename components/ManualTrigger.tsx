@@ -31,18 +31,18 @@ export default function ManualTrigger() {
   }
 
   return (
-    <div className="border border-green-400/30 p-4 space-y-2">
-      <h3 className="text-sm font-bold opacity-80">DEBUG CONTROLS</h3>
+    <div className="sf-panel">
+      <h3 className="text-sm font-bold mb-3 pb-2 border-b border-white/50">DEBUG</h3>
       <button
         onClick={triggerWorldTick}
         disabled={isTriggering}
-        className="px-4 py-2 border border-green-400 hover:bg-green-400 hover:text-black transition-colors disabled:opacity-50"
+        className="w-full sf-button py-2 disabled:opacity-50"
       >
         {isTriggering ? 'TRIGGERING...' : 'TRIGGER WORLD TICK'}
       </button>
       {response && (
-        <div className="text-xs mt-2 font-mono">
-          {response}
+        <div className="text-sm mt-2 font-mono opacity-70">
+          &gt; {response}
         </div>
       )}
     </div>

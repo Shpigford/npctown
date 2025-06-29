@@ -80,11 +80,17 @@ async function makeNPCDecision(
     Math.abs(building.x - npc.x) <= 5 && Math.abs(building.y - npc.y) <= 5
   )
 
-  // Parse personality and stats from JSON
+  // Parse personality, stats, and relationships from JSON
   const personality = typeof npc.personality === 'string' ? JSON.parse(npc.personality) : npc.personality
   const stats = typeof npc.stats === 'string' ? JSON.parse(npc.stats) : npc.stats
+  const relationships = typeof npc.relationships === 'string' ? JSON.parse(npc.relationships) : npc.relationships || []
+  
+  // Calculate total population
+  const totalCitizens = otherNpcs.length + 1 // Include self
 
   const prompt = `You are ${npc.name}, a citizen of NPC Town with a rich inner life and unique personality.
+
+TOWN POPULATION: ${totalCitizens} citizen${totalCitizens === 1 ? '' : 's'} ${totalCitizens === 1 ? '(you are the only one here!)' : totalCitizens <= 3 ? '(a small, intimate community)' : totalCitizens <= 10 ? '(a growing village)' : '(a bustling town)'}
 
 PERSONALITY PROFILE:
 - Traits: ${personality.traits?.join(', ') || 'no specific traits'}
@@ -97,6 +103,11 @@ CURRENT STATE:
 - Hunger: ${stats.hunger}/100 ${stats.hunger > 70 ? '(very hungry!)' : stats.hunger < 30 ? '(well-fed)' : '(getting peckish)'}
 - Social: ${stats.social}/100 ${stats.social < 30 ? '(lonely)' : stats.social > 80 ? '(socially fulfilled)' : '(could use some company)'}
 
+RELATIONSHIPS:
+${relationships.length === 0 ? 'You haven\'t formed any close relationships yet.' : relationships.map(rel => {
+  return `- ${rel.npc_name}: Familiarity ${rel.familiarity}/100, Affinity ${rel.affinity > 0 ? '+' : ''}${rel.affinity}/100 (${rel.interaction_count} interactions)`
+}).join('\n')}
+
 CONTEXT:
 - Location: (${npc.x}, ${npc.y})
 - Time: ${worldState.time_of_day}:00 (${worldState.time_of_day < 6 ? 'late night' : worldState.time_of_day < 12 ? 'morning' : worldState.time_of_day < 18 ? 'afternoon' : 'evening'}), Day ${worldState.day_count}
@@ -105,8 +116,10 @@ CONTEXT:
 SURROUNDINGS:
 ${nearbyNpcs.length > 0 ? `Other people nearby: ${nearbyNpcs.map(n => {
   const nStats = typeof n.stats === 'string' ? JSON.parse(n.stats) : n.stats
-  return `${n.name} is ${Math.abs(n.x - npc.x) + Math.abs(n.y - npc.y)} steps away (they look ${nStats.energy < 30 ? 'tired' : 'energetic'})`
-}).join('; ')}` : 'You are alone in this area'}
+  const relationship = relationships.find(r => r.npc_id === n.id)
+  const relInfo = relationship ? ` (${relationship.familiarity > 50 ? 'close friend' : relationship.familiarity > 20 ? 'acquaintance' : 'stranger'}, affinity: ${relationship.affinity > 50 ? 'strong positive' : relationship.affinity > 0 ? 'positive' : relationship.affinity < -50 ? 'strong negative' : 'negative'})` : ' (stranger)'
+  return `${n.name} is ${Math.abs(n.x - npc.x) + Math.abs(n.y - npc.y)} steps away${relInfo} - they look ${nStats.energy < 30 ? 'tired' : 'energetic'}`
+}).join('; ')}` : totalCitizens === 1 ? 'You are completely alone in this town.' : 'You are alone in this area'}
 
 Nearby locations: ${nearbyBuildings.map(b => `The ${b.name} (${b.type}) is ${Math.abs(b.x - npc.x) + Math.abs(b.y - npc.y)} steps away`).join('; ')}
 
@@ -116,11 +129,17 @@ ${recentMemory.length > 0 ? recentMemory.slice(-3).map(m => m.description).join(
 INSTRUCTIONS:
 Based on your personality, current needs, and surroundings, decide what to do next. Be creative and express your thoughts, feelings, and motivations. Your response should reflect your unique personality and current state of mind.
 
+IMPORTANT CONSIDERATIONS:
+- Population awareness: You know there are ${totalCitizens} citizen${totalCitizens === 1 ? '' : 's'} in town. ${totalCitizens === 1 ? 'Being alone affects your mood and decisions.' : ''}
+- Relationships: Consider your existing relationships when choosing who to interact with
+- Personality: Let your traits, likes, and dislikes guide your actions
+- Memory: Remember past interactions and let them influence your behavior
+
 IMPORTANT NEEDS TO CONSIDER:
 - If energy < 20: You MUST rest immediately, you're about to collapse!
 - If energy < 40: Strongly consider resting soon
 - If hunger > 80: Urgently seek food at the Market or Farm
-- If social < 20: You're feeling very lonely, seek companionship
+- If social < 20: You're feeling very lonely, seek companionship${totalCitizens === 1 ? ' (though you are alone)' : ''}
 
 Actions you can take:
 1. Move (specify direction or destination)
@@ -223,9 +242,49 @@ async function applyDecision(npc: any, decision: any, supabase: any) {
     eventType = 'action'
   }
 
-  // Parse stats if needed
+  // Parse stats and relationships if needed
   const currentStats = typeof npc.stats === 'string' ? JSON.parse(npc.stats) : npc.stats
   const currentMemory = typeof npc.memory === 'string' ? JSON.parse(npc.memory) : npc.memory || []
+  const currentRelationships = typeof npc.relationships === 'string' ? JSON.parse(npc.relationships) : npc.relationships || []
+
+  // Update relationships if interacting with another NPC
+  const updatedRelationships = [...currentRelationships]
+  if (decision.action === 'interact' && decision.target) {
+    // Find the target NPC
+    const { data: targetNpc } = await supabase
+      .from('npcs')
+      .select('*')
+      .eq('name', decision.target)
+      .single()
+    
+    if (targetNpc) {
+      // Check if relationship exists
+      const existingRelIndex = updatedRelationships.findIndex(r => r.npc_id === targetNpc.id)
+      
+      if (existingRelIndex >= 0) {
+        // Update existing relationship
+        updatedRelationships[existingRelIndex] = {
+          ...updatedRelationships[existingRelIndex],
+          familiarity: Math.min(100, updatedRelationships[existingRelIndex].familiarity + 5),
+          affinity: Math.max(-100, Math.min(100, updatedRelationships[existingRelIndex].affinity + (decision.thought?.includes('enjoy') || decision.thought?.includes('like') ? 3 : -1))),
+          last_interaction: new Date().toISOString(),
+          interaction_count: updatedRelationships[existingRelIndex].interaction_count + 1,
+          notes: [...updatedRelationships[existingRelIndex].notes.slice(-4), decision.thought || decision.description].filter(Boolean)
+        }
+      } else {
+        // Create new relationship
+        updatedRelationships.push({
+          npc_id: targetNpc.id,
+          npc_name: targetNpc.name,
+          familiarity: 5,
+          affinity: decision.thought?.includes('enjoy') || decision.thought?.includes('like') ? 5 : 0,
+          last_interaction: new Date().toISOString(),
+          interaction_count: 1,
+          notes: [decision.thought || decision.description].filter(Boolean)
+        })
+      }
+    }
+  }
 
   // Update memory with recent action and thought
   const newMemory = {
@@ -258,7 +317,8 @@ async function applyDecision(npc: any, decision: any, supabase: any) {
           ? Math.max(0, currentStats.health - 5) // Health decreases when exhausted or starving
           : Math.min(100, currentStats.health + 1) // Slowly recover health otherwise
       },
-      memory: updatedMemory
+      memory: updatedMemory,
+      relationships: updatedRelationships
     })
     .eq('id', npc.id)
 

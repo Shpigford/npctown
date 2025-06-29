@@ -3,27 +3,137 @@
 @tailwind utilities;
 
 @layer base {
+  :root {
+    /* Society Fail inspired brutalist color palette */
+    --text-color: #fff;
+    --background-color: #000;
+    --background-color-alt: #111;
+    --border-color: #fff;
+    --light-red: #e06c75;
+    --dark-red: #be5046;
+    --green: #98c379;
+    --light-green: #b5e890;
+    --light-yellow: #e5c07b;
+    --dark-yellow: #d19a66;
+    --blue: #61afef;
+    --magenta: #c678dd;
+    --cyan: #56b6c2;
+    --border-thickness: 3px;
+    --font-family: 'Geist Mono', monospace;
+    --line-height: 1.6;
+  }
+  
   html {
-    @apply bg-black text-green-400;
+    @apply bg-black;
+    color: var(--text-color);
+    font-family: var(--font-family);
+    font-size: 14px;
+    line-height: var(--line-height);
   }
   
   body {
-    @apply font-mono;
+    font-family: 'Geist Mono', monospace;
+    image-rendering: pixelated;
+    image-rendering: -moz-crisp-edges;
+    image-rendering: crisp-edges;
   }
   
   * {
-    @apply selection:bg-green-400 selection:text-black;
+    box-sizing: border-box;
+  }
+  
+  body, input, button, select, textarea {
+    font-family: 'Geist Mono', monospace !important;
+  }
+  
+  ::selection {
+    background: var(--text-color);
+    color: var(--background-color);
+  }
+  
+  /* Scrollbar styling */
+  ::-webkit-scrollbar {
+    width: 10px;
+  }
+  
+  ::-webkit-scrollbar-track {
+    background: var(--background-color-alt);
+  }
+  
+  ::-webkit-scrollbar-thumb {
+    background: var(--text-color);
+    border: 2px solid var(--background-color);
+  }
+  
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--light-red);
   }
 }
 
 @layer utilities {
-  .terminal-glow {
-    text-shadow: 0 0 10px rgba(74, 222, 128, 0.5);
+  /* Remove glow effects for brutalist aesthetic */
+  .terminal-border {
+    border: var(--border-thickness) solid var(--border-color);
   }
   
-  .terminal-border {
-    box-shadow: 
-      0 0 20px rgba(74, 222, 128, 0.3),
-      inset 0 0 20px rgba(74, 222, 128, 0.1);
+  /* Society Fail Style Classes */
+  .sf-border {
+    border: var(--border-thickness) solid var(--border-color);
   }
+  
+  .sf-panel {
+    background: var(--background-color);
+    border: var(--border-thickness) solid var(--border-color);
+    padding: 1rem;
+  }
+  
+  .sf-button {
+    background: transparent;
+    border: var(--border-thickness) solid var(--border-color);
+    color: var(--text-color);
+    padding: 0.5rem 1rem;
+    font-family: 'Geist Mono', monospace;
+    font-size: 1rem;
+    cursor: pointer;
+    text-transform: uppercase;
+    transition: all 0.1s;
+  }
+  
+  .sf-button:hover:not(:disabled) {
+    background: var(--border-color);
+    color: var(--background-color);
+    border-color: var(--border-color);
+  }
+  
+  .sf-button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+  
+  /* Brutalist headers */
+  .sf-header {
+    background: var(--text-color);
+    color: var(--background-color);
+    padding: 0.2em 0.5em;
+    text-transform: uppercase;
+    font-weight: 700;
+    border-bottom: var(--border-thickness) solid var(--text-color);
+  }
+  
+  .sf-stat-bar {
+    height: 1em;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid var(--border-color);
+    position: relative;
+  }
+  
+  .sf-stat-fill {
+    height: 100%;
+    transition: width 0.3s, background 0.3s;
+  }
+  
+  .stat-high { background: var(--green); }
+  .stat-med { background: var(--light-yellow); }
+  .stat-low { background: var(--dark-red); }
 }
+

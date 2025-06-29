@@ -4,9 +4,7 @@ import { useEffect, useState } from 'react'
 import AnimatedWorldMap from './AnimatedWorldMap'
 import EventLog from './EventLog'
 import StatusBar from './StatusBar'
-import ManualTrigger from './ManualTrigger'
 import PeopleDirectory from './PeopleDirectory'
-import NPCSpawner from './NPCSpawner'
 import InteractionPrompt from './InteractionPrompt'
 import { useGame } from '@/lib/hooks/useGame'
 import { useInteractionOpportunity } from '@/lib/hooks/useInteractionOpportunity'
@@ -31,76 +29,93 @@ export default function Terminal() {
   }
 
   return (
-    <div className="w-full max-w-7xl mx-auto">
-      <div className="border border-green-400/50 terminal-border bg-black p-4 space-y-4">
-        {/* Header */}
-        <div className="text-center space-y-1">
-          <h1 className="text-2xl font-bold terminal-glow">NPC TOWN</h1>
-          <p className="text-xs opacity-70">AI SOCIAL EXPERIMENT v1.0</p>
-        </div>
-
-        {/* Status Bar */}
-        <StatusBar worldState={worldState} npcCount={npcs.length} hasActiveInteraction={!!selectedNpc} />
-
-        {/* Main Content */}
-        <div className="space-y-4">
-          {/* Top Row - Map and Event Log side by side */}
-          <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
-            {/* World Map */}
-            <div className="border border-green-400/30 p-4">
-              <h2 className="text-sm font-bold mb-2 opacity-80">WORLD MAP</h2>
-              <AnimatedWorldMap npcs={npcs} buildings={buildings} />
+    <div className="min-h-screen bg-black text-white">
+      <div className="max-w-full mx-auto p-4">
+        {/* Header Bar */}
+        <header className="border-[3px] border-white bg-black mb-4">
+          <div className="px-4 py-3 flex items-center justify-between">
+            {/* Logo */}
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 border-[3px] border-white flex items-center justify-center font-bold text-xl">
+                N
+              </div>
+              <div>
+                <h1 className="text-xl font-bold tracking-wider">NPC TOWN</h1>
+                <p className="text-xs opacity-70 uppercase">AI Social Experiment</p>
+              </div>
             </div>
             
-            {/* Event Log */}
-            <div className="border border-green-400/30 p-4">
-              <h2 className="text-sm font-bold mb-2 opacity-80">EVENT LOG</h2>
-              <EventLog events={events} />
+            {/* Status Bar inline with header */}
+            <StatusBar worldState={worldState} npcCount={npcs.length} hasActiveInteraction={!!selectedNpc} />
+          </div>
+        </header>
+
+        {/* Main Content Grid */}
+        <div className="space-y-4">
+          {/* Top Row - Map and Event Log 50/50 */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            {/* World Map - 50% */}
+            <div className="border-[3px] border-white bg-black">
+              <h2 className="sf-header text-sm">WORLD MAP</h2>
+              <div className="p-4">
+                <AnimatedWorldMap npcs={npcs} buildings={buildings} />
+              </div>
+            </div>
+            
+            {/* Event Log - 50% */}
+            <div className="border-[3px] border-white bg-black">
+              <h2 className="sf-header text-sm">ACTIVITY LOG</h2>
+              <div className="p-4">
+                <EventLog events={events} />
+              </div>
             </div>
           </div>
-
-          {/* Bottom Row - People Directory and Controls */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-            {/* People Directory (2 columns wide) */}
-            <div className="lg:col-span-2 border border-green-400/30 p-4">
+          
+          {/* Bottom Full Width - People Directory */}
+          <div className="border-[3px] border-white bg-black">
+            <h2 className="sf-header text-sm">PEOPLE DIRECTORY</h2>
+            <div className="p-4">
               <PeopleDirectory npcs={npcs} />
-            </div>
-            
-            {/* Controls Column */}
-            <div className="space-y-4">
-              <NPCSpawner />
-              <ManualTrigger />
             </div>
           </div>
         </div>
 
         {/* Help */}
         {showHelp && (
-          <div className="border border-green-400/30 p-4 text-xs space-y-2">
-            <div className="font-bold">CONTROLS:</div>
-            <div className="opacity-70">H - Toggle this help menu</div>
-            <div className="opacity-70">Hover over map icons to see names</div>
-            <div className="mt-2 font-bold">SIMULATION:</div>
-            <div className="opacity-70">Time progresses every 30 seconds</div>
-            <div className="opacity-70">NPCs make AI-driven decisions</div>
-            <div className="opacity-70">Watch the event log for activities</div>
+          <div className="border-[3px] border-white bg-black mt-4">
+            <h2 className="sf-header text-sm">HELP</h2>
+            <div className="p-4 text-xs space-y-2 font-mono">
+              <div className="text-white uppercase font-bold">CONTROLS:</div>
+              <div className="text-white/70">H - Toggle this help menu</div>
+              <div className="text-white/70">Hover over map icons to see names</div>
+              <div className="mt-3 text-white uppercase font-bold">SIMULATION:</div>
+              <div className="text-white/70">Time progresses every 30 seconds</div>
+              <div className="text-white/70">NPCs make AI-driven decisions</div>
+              <div className="text-white/70">Watch the event log for activities</div>
+            </div>
           </div>
         )}
 
-        {/* Footer */}
-        <div className="text-center text-xs opacity-50">
-          Press H for help | Simulation running...
-        </div>
-      </div>
+        {/* Footer Bar */}
+        <footer className="border-[3px] border-white bg-black mt-4">
+          <div className="px-4 py-2 text-center">
+            <div className="text-xs uppercase tracking-wider">
+              <span className="text-white/70">[H] HELP</span>
+              <span className="mx-3 text-white/30">|</span>
+              <span className="text-green">SIMULATION RUNNING...</span>
+            </div>
+          </div>
+        </footer>
 
-      {/* Interaction Prompt */}
-      {selectedNpc && (
-        <InteractionPrompt
-          npc={selectedNpc}
-          onClose={handleClose}
-          onDecision={handleDecision}
-        />
-      )}
+        {/* Interaction Prompt */}
+        {selectedNpc && (
+          <InteractionPrompt
+            npc={selectedNpc}
+            onClose={handleClose}
+            onDecision={handleDecision}
+          />
+        )}
+      </div>
     </div>
   )
 }

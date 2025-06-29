@@ -137,74 +137,75 @@ export default function InteractionPrompt({ npc, onClose, onDecision }: Interact
   }
 
   return (
-    <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
-      <div className="bg-black border-2 border-green-400 p-6 max-w-2xl w-full terminal-border animate-fade-in">
+    <div className="fixed inset-0 bg-black/90 flex items-center justify-center z-50 p-4">
+      <div className="bg-black border-[3px] border-white p-0 max-w-2xl w-full">
         {/* Header */}
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-3">
-            <User size={20} className="text-yellow-400" />
-            <h2 className="text-lg font-bold text-green-400">
-              VISITOR INTERACTION: {npc.name}
-            </h2>
+        <div className="sf-header flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Zap size={16} />
+            <span className="text-sm font-bold">VISITOR CONTROL: {npc.name.toUpperCase()}</span>
           </div>
           <button
             onClick={onClose}
-            className="text-green-400 hover:text-green-300 transition-colors"
+            className="hover:bg-white hover:text-black px-2 py-1 transition-colors"
           >
-            <X size={20} />
+            <X size={16} />
           </button>
         </div>
+        
+        <div className="p-6">
 
-        {/* Timer */}
-        <div className="flex items-center gap-2 mb-4 text-sm">
-          <Clock size={14} className={timeLeft <= 5 ? 'text-red-400 animate-pulse' : 'text-green-400'} />
-          <span className={timeLeft <= 5 ? 'text-red-400' : 'text-green-400'}>
-            Time remaining: {timeLeft}s
-          </span>
-        </div>
-
-        {/* NPC Status */}
-        <div className="bg-green-400/10 p-3 rounded mb-4 text-xs">
-          <div className="font-semibold mb-2">{npc.name}'s Current State:</div>
-          <div className="grid grid-cols-2 gap-2">
-            <div>Location: ({npc.x}, {npc.y})</div>
-            <div>Energy: {stats.energy}%</div>
-            <div>Hunger: {stats.hunger}%</div>
-            <div>Social: {stats.social}%</div>
+          {/* Timer */}
+          <div className="flex items-center gap-2 mb-4 text-xs uppercase">
+            <Clock size={12} className={timeLeft <= 5 ? 'text-light-red animate-pulse' : 'text-white'} />
+            <span className={timeLeft <= 5 ? 'text-light-red font-bold' : 'text-white/70'}>
+              TIME: {timeLeft}s
+            </span>
           </div>
-          <div className="mt-2">
-            Personality: {personality.traits?.join(', ')}
-          </div>
-        </div>
 
-        {/* Choices */}
-        <div className="space-y-2">
-          <div className="text-sm font-semibold mb-2">What should {npc.name} do?</div>
-          {getContextualChoices().map((choice, index) => (
-            <button
-              key={index}
-              onClick={() => handleChoice(choice)}
-              disabled={isSubmitting}
-              className="w-full text-left p-3 border border-green-400/30 hover:border-green-400 hover:bg-green-400/10 transition-all disabled:opacity-50 group"
-            >
+          {/* NPC Status */}
+          <div className="border border-white/20 p-3 mb-4 text-xs">
+            <div className="font-bold uppercase mb-2">CURRENT STATUS:</div>
+            <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-white/70">
+              <div>POSITION: ({npc.x}, {npc.y})</div>
+              <div>ENERGY: <span className={stats.energy < 30 ? 'text-light-red' : 'text-green'}>{stats.energy}%</span></div>
+              <div>HUNGER: <span className={stats.hunger > 70 ? 'text-light-red' : 'text-green'}>{stats.hunger}%</span></div>
+              <div>SOCIAL: <span className={stats.social < 30 ? 'text-light-yellow' : 'text-green'}>{stats.social}%</span></div>
+            </div>
+            <div className="mt-2 text-white/70">
+              TRAITS: {personality.traits?.join(', ').toUpperCase()}
+            </div>
+          </div>
+
+          {/* Choices */}
+          <div className="space-y-2">
+            <div className="text-xs font-bold uppercase mb-3">SELECT ACTION:</div>
+            {getContextualChoices().map((choice, index) => (
+              <button
+                key={index}
+                onClick={() => handleChoice(choice)}
+                disabled={isSubmitting}
+                className="w-full text-left p-3 border-[2px] border-white hover:bg-white hover:text-black transition-all disabled:opacity-50 group"
+              >
               <div className="flex items-start gap-3">
-                <Zap size={14} className="text-yellow-400 mt-0.5 group-hover:animate-pulse" />
-                <div className="flex-1">
-                  <div className="text-sm font-semibold">{choice.description}</div>
-                  {choice.dialogue && (
-                    <div className="text-xs italic opacity-70 mt-1">
-                      "{choice.dialogue}"
-                    </div>
-                  )}
-                </div>
+                  <span className="text-light-yellow group-hover:text-black">[{index + 1}]</span>
+                  <div className="flex-1">
+                    <div className="text-sm font-medium uppercase">{choice.description}</div>
+                    {choice.dialogue && (
+                      <div className="text-xs italic text-white/50 group-hover:text-black/70 mt-1">
+                        "{choice.dialogue}"
+                      </div>
+                    )}
+                  </div>
               </div>
             </button>
           ))}
         </div>
 
-        {/* Footer */}
-        <div className="mt-4 text-xs text-center opacity-50">
-          Your choice will influence {npc.name}'s next action
+          {/* Footer */}
+          <div className="mt-4 text-xs text-center text-white/50 uppercase">
+            YOUR CHOICE WILL GUIDE {npc.name.toUpperCase()}
+          </div>
         </div>
       </div>
     </div>

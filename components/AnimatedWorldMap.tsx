@@ -15,7 +15,7 @@ import {
 import type { NPC, Building } from '@/types/game'
 
 const WORLD_SIZE = 20
-const CELL_SIZE = 16 // pixels
+const CELL_SIZE = 24 // pixels - larger cells for better visibility
 
 interface WorldMapProps {
   npcs: NPC[]
@@ -60,21 +60,21 @@ export default function AnimatedWorldMap({ npcs, buildings }: WorldMapProps) {
   }, [npcs])
 
   const getBuildingIcon = (building: Building) => {
-    const iconProps = { size: 12, className: "inline-block" }
+    const iconProps = { size: 16, className: "inline-block" }
     
     switch (building.type) {
       case 'government':
-        return <Building2 {...iconProps} className="text-blue-400" />
+        return <Building2 {...iconProps} className="text-blue" />
       case 'commerce':
-        return <Store {...iconProps} className="text-yellow-400" />
+        return <Store {...iconProps} className="text-light-yellow" />
       case 'social':
-        return <Coffee {...iconProps} className="text-orange-400" />
+        return <Coffee {...iconProps} className="text-magenta" />
       case 'residential':
-        return <Home {...iconProps} className="text-green-400" />
+        return <Home {...iconProps} className="text-green" />
       case 'production':
-        return <Wheat {...iconProps} className="text-yellow-600" />
+        return <Wheat {...iconProps} className="text-dark-yellow" />
       case 'utility':
-        return <Droplet {...iconProps} className="text-cyan-400" />
+        return <Droplet {...iconProps} className="text-cyan" />
       default:
         return building.symbol
     }
@@ -95,22 +95,23 @@ export default function AnimatedWorldMap({ npcs, buildings }: WorldMapProps) {
   }, [buildings])
 
   return (
-    <div className="font-mono text-xs leading-tight select-none">
-      <div className="inline-block border-2 border-green-400/30 bg-black/80 relative overflow-hidden">
+    <div className="font-mono text-xs leading-tight select-none inline-block">
+      <div className="border-[3px] border-white bg-black relative overflow-hidden">
+        <div style={{ width: WORLD_SIZE * CELL_SIZE, height: WORLD_SIZE * CELL_SIZE }}>
         {/* Grid background */}
         <div 
           className="absolute inset-0 pointer-events-none"
           style={{
             backgroundImage: `
-              linear-gradient(to right, rgba(74, 222, 128, 0.1) 1px, transparent 1px),
-              linear-gradient(to bottom, rgba(74, 222, 128, 0.1) 1px, transparent 1px)
+              linear-gradient(to right, rgba(255, 255, 255, 0.1) 1px, transparent 1px),
+              linear-gradient(to bottom, rgba(255, 255, 255, 0.1) 1px, transparent 1px)
             `,
             backgroundSize: `${CELL_SIZE}px ${CELL_SIZE}px`
           }}
         />
         
-        {/* Map content */}
-        <div className="relative p-2" style={{ width: WORLD_SIZE * CELL_SIZE + 16, height: WORLD_SIZE * CELL_SIZE + 16 }}>
+          {/* Map content */}
+          <div className="relative" style={{ width: WORLD_SIZE * CELL_SIZE, height: WORLD_SIZE * CELL_SIZE }}>
           {/* Empty cells */}
           {Array.from({ length: WORLD_SIZE }, (_, y) => (
             <div key={y} className="absolute" style={{ top: y * CELL_SIZE, left: 0 }}>
@@ -124,7 +125,7 @@ export default function AnimatedWorldMap({ npcs, buildings }: WorldMapProps) {
                     height: CELL_SIZE
                   }}
                 >
-                  <span className="opacity-20 text-gray-600">·</span>
+                  <span className="text-white/20">·</span>
                 </div>
               ))}
             </div>
@@ -134,7 +135,7 @@ export default function AnimatedWorldMap({ npcs, buildings }: WorldMapProps) {
           {buildings.map(building => (
             <div
               key={`${building.id}-area`}
-              className="absolute bg-green-400/5 border border-green-400/20"
+              className="absolute bg-white/5 border border-white/20"
               style={{
                 left: building.x * CELL_SIZE,
                 top: building.y * CELL_SIZE,
@@ -162,7 +163,7 @@ export default function AnimatedWorldMap({ npcs, buildings }: WorldMapProps) {
                 }}
               >
                 {getBuildingIcon(building)}
-                <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-1 px-2 py-1 bg-black border border-green-400/50 rounded text-xs whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-20">
+                <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-1 px-2 py-1 bg-black border border-white text-xs whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-20 uppercase">
                   {building.name}
                 </div>
               </div>
@@ -170,7 +171,7 @@ export default function AnimatedWorldMap({ npcs, buildings }: WorldMapProps) {
           })}
 
           {/* NPC movement trails */}
-          <svg className="absolute inset-0 pointer-events-none" style={{ width: WORLD_SIZE * CELL_SIZE, height: WORLD_SIZE * CELL_SIZE }}>
+          <svg className="absolute inset-0 pointer-events-none" width={WORLD_SIZE * CELL_SIZE} height={WORLD_SIZE * CELL_SIZE}>
             {Array.from(npcTrails.values()).map(trail => {
               if (trail.positions.length < 2) return null
               
@@ -188,9 +189,9 @@ export default function AnimatedWorldMap({ npcs, buildings }: WorldMapProps) {
                     y1={pos.y * CELL_SIZE + CELL_SIZE / 2}
                     x2={nextPos.x * CELL_SIZE + CELL_SIZE / 2}
                     y2={nextPos.y * CELL_SIZE + CELL_SIZE / 2}
-                    stroke="rgb(250, 204, 21)"
-                    strokeWidth="2"
-                    strokeDasharray="2 4"
+                    stroke="#e5c07b"
+                    strokeWidth="1"
+                    strokeDasharray="2 2"
                     opacity={opacity}
                   />
                 )
@@ -220,8 +221,8 @@ export default function AnimatedWorldMap({ npcs, buildings }: WorldMapProps) {
                 }}
                 style={{ width: CELL_SIZE, height: CELL_SIZE }}
               >
-                <User size={12} className="text-yellow-400 animate-pulse z-10 relative drop-shadow-[0_0_8px_rgba(250,204,21,0.5)]" />
-                <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-1 px-2 py-1 bg-black border border-green-400/50 rounded text-xs whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-20">
+                <User size={16} className="text-light-yellow z-10 relative" />
+                <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-1 px-2 py-1 bg-black border border-white text-xs whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-20 uppercase">
                   {npc.name}
                   <div className="text-[10px] opacity-70">
                     ({npc.x}, {npc.y})
@@ -230,28 +231,28 @@ export default function AnimatedWorldMap({ npcs, buildings }: WorldMapProps) {
               </motion.div>
             ))}
           </AnimatePresence>
+          </div>
         </div>
       </div>
       
-      {/* Coordinate labels */}
-      <div className="mt-2 text-[10px] opacity-50">
-        <div>Grid: {WORLD_SIZE}x{WORLD_SIZE}</div>
-        <div>Coordinates: (0,0) to ({WORLD_SIZE-1},{WORLD_SIZE-1})</div>
+      {/* Grid info */}
+      <div className="mt-2 text-[10px] text-white/50 uppercase">
+        <div>GRID: {WORLD_SIZE}x{WORLD_SIZE} | COORDINATES: (0,0) TO ({WORLD_SIZE-1},{WORLD_SIZE-1})</div>
       </div>
 
       {/* Legend */}
-      <div className="mt-4 grid grid-cols-2 gap-2 text-xs">
+      <div className="mt-3 border-t border-white/20 pt-3 grid grid-cols-2 gap-4 text-xs">
         <div className="space-y-1">
-          <div className="font-bold opacity-80">BUILDINGS:</div>
-          <div className="flex items-center gap-2"><Building2 size={12} className="text-blue-400" /> Town Hall</div>
-          <div className="flex items-center gap-2"><Store size={12} className="text-yellow-400" /> Market</div>
-          <div className="flex items-center gap-2"><Coffee size={12} className="text-orange-400" /> Tavern</div>
+          <div className="font-bold text-white uppercase">BUILDINGS:</div>
+          <div className="flex items-center gap-2 text-white/70"><Building2 size={14} className="text-blue" /> TOWN HALL</div>
+          <div className="flex items-center gap-2 text-white/70"><Store size={14} className="text-light-yellow" /> MARKET</div>
+          <div className="flex items-center gap-2 text-white/70"><Coffee size={14} className="text-magenta" /> TAVERN</div>
         </div>
         <div className="space-y-1">
-          <div className="font-bold opacity-80">ICONS:</div>
-          <div className="flex items-center gap-2"><Home size={12} className="text-green-400" /> House</div>
-          <div className="flex items-center gap-2"><Wheat size={12} className="text-yellow-600" /> Farm</div>
-          <div className="flex items-center gap-2"><Droplet size={12} className="text-cyan-400" /> Well</div>
+          <div className="font-bold text-white uppercase">LEGEND:</div>
+          <div className="flex items-center gap-2 text-white/70"><Home size={14} className="text-green" /> HOUSE</div>
+          <div className="flex items-center gap-2 text-white/70"><Wheat size={14} className="text-dark-yellow" /> FARM</div>
+          <div className="flex items-center gap-2 text-white/70"><Droplet size={14} className="text-cyan" /> WELL</div>
         </div>
       </div>
     </div>

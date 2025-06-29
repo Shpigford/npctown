@@ -16,6 +16,7 @@ export interface NPC {
     social: number
   }
   memory: Memory[]
+  relationships: Relationship[]
   current_action: string | null
 }
 
@@ -24,6 +25,17 @@ export interface Memory {
   timestamp: string
   importance: number
   related_npcs?: string[]
+  thought?: string
+}
+
+export interface Relationship {
+  npc_id: string
+  npc_name: string
+  familiarity: number // 0-100, how well they know each other
+  affinity: number // -100 to 100, how much they like each other
+  last_interaction: string
+  interaction_count: number
+  notes: string[] // memorable moments or impressions
 }
 
 export interface Building {

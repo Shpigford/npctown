@@ -9,16 +9,17 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@ai-sdk/openai": "^1.0.20",
+    "@supabase/ssr": "^0.6.0",
+    "@supabase/supabase-js": "^2.48.0",
+    "ai": "^4.0.33",
+    "date-fns": "^4.1.0",
+    "framer-motion": "^12.0.0",
+    "geist": "^1.4.2",
+    "lucide-react": "^0.468.0",
     "next": "15.3.4",
     "react": "19.0.0",
-    "react-dom": "19.0.0",
-    "@supabase/supabase-js": "^2.48.0",
-    "@supabase/ssr": "^0.6.0",
-    "ai": "^4.0.33",
-    "@ai-sdk/openai": "^1.0.20",
-    "framer-motion": "^12.0.0",
-    "date-fns": "^4.1.0",
-    "lucide-react": "^0.468.0"
+    "react-dom": "19.0.0"
   },
   "devDependencies": {
     "@types/node": "^22",

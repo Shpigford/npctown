@@ -19,6 +19,7 @@ export interface Database {
           personality: Json
           stats: Json
           memory: Json
+          relationships: Json
           current_action: string | null
           created_at: string
           updated_at: string
@@ -32,6 +33,7 @@ export interface Database {
           personality?: Json
           stats?: Json
           memory?: Json
+          relationships?: Json
           current_action?: string | null
           created_at?: string
           updated_at?: string
@@ -45,6 +47,7 @@ export interface Database {
           personality?: Json
           stats?: Json
           memory?: Json
+          relationships?: Json
           current_action?: string | null
           created_at?: string
           updated_at?: string
