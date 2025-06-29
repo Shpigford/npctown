@@ -108,7 +108,17 @@ export async function POST() {
             body: JSON.stringify({ npcId: npc.id })
           })
           if (!response.ok) {
+            const responseText = await response.text()
             console.error('[world-tick API] NPC action failed for NPC', npc.id, 'with status:', response.status)
+            console.error('[world-tick API] Response body:', responseText)
+            try {
+              const errorJson = JSON.parse(responseText)
+              console.error('[world-tick API] Error details:', errorJson)
+            } catch (e) {
+              // Not JSON, already logged as text
+            }
+          } else {
+            console.log('[world-tick API] NPC action succeeded for NPC', npc.id)
           }
         } catch (npcError) {
           console.error('[world-tick API] Error triggering NPC action for NPC', npc.id, ':', npcError)

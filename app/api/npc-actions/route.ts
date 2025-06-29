@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { openai } from '@ai-sdk/openai'
+import { createOpenAI } from '@ai-sdk/openai'
 import { generateText } from 'ai'
 import { createClient } from '@/lib/supabase/server'
 import type { NPC, Building, WorldState } from '@/types/game'
@@ -160,7 +160,20 @@ Respond with a JSON object:
 
   try {
     console.log('[NPC AI] Generating decision for:', npc.name)
-    console.log('[NPC AI] Using OpenAI API key:', process.env.OPENAI_API_KEY ? 'Key is set' : 'KEY IS MISSING')
+    console.log('[NPC AI] OpenAI API key check:', {
+      keyExists: !!process.env.OPENAI_API_KEY,
+      keyLength: process.env.OPENAI_API_KEY?.length || 0,
+      keyPrefix: process.env.OPENAI_API_KEY?.substring(0, 7) || 'NO_KEY',
+      nodeEnv: process.env.NODE_ENV,
+      vercelEnv: process.env.VERCEL_ENV
+    })
+    
+    // Initialize OpenAI client with explicit API key
+    const openai = createOpenAI({
+      apiKey: process.env.OPENAI_API_KEY || '',
+    })
+    
+    console.log('[NPC AI] OpenAI client created, attempting to generate text...')
     
     const { text } = await generateText({
       model: openai('gpt-4o-mini'),
@@ -189,8 +202,22 @@ Respond with a JSON object:
     console.error('[NPC AI] Failed to generate decision:', error)
     console.error('[NPC AI] Error details:', {
       message: error instanceof Error ? error.message : 'Unknown error',
-      stack: error instanceof Error ? error.stack : undefined
+      stack: error instanceof Error ? error.stack : undefined,
+      name: error instanceof Error ? error.name : 'Unknown',
+      cause: error instanceof Error ? error.cause : undefined,
+      fullError: JSON.stringify(error, null, 2)
     })
+    
+    // Log specific error types
+    if (error instanceof Error) {
+      if (error.message.includes('401') || error.message.includes('Unauthorized')) {
+        console.error('[NPC AI] Authentication error - check if API key is valid')
+      } else if (error.message.includes('429')) {
+        console.error('[NPC AI] Rate limit error - too many requests')
+      } else if (error.message.includes('insufficient_quota')) {
+        console.error('[NPC AI] Quota error - check OpenAI account credits')
+      }
+    }
     return {
       action: 'rest',
       target: null,
